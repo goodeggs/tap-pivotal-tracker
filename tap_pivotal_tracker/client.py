@@ -1,6 +1,4 @@
-import json
 import os
-from datetime import datetime
 from typing import Dict
 
 import attr
@@ -113,6 +111,7 @@ class PivotalTrackerStream(object):
         '''Writes a Singer state message.'''
         return singer.write_state(self.state)
 
+
 @attr.s
 class AccountsStream(PivotalTrackerStream):
     tap_stream_id = 'accounts'
@@ -129,6 +128,7 @@ class AccountsStream(PivotalTrackerStream):
                         transformed_record = transformer.transform(data=record, schema=self.schema)
                         singer.write_record(stream_name=self.tap_stream_id, time_extracted=singer.utils.now(), record=transformed_record)
                         counter.increment()
+
 
 @attr.s
 class ProjectsStream(PivotalTrackerStream):
@@ -148,6 +148,7 @@ class ProjectsStream(PivotalTrackerStream):
                         transformed_record = transformer.transform(data=record, schema=self.schema)
                         singer.write_record(stream_name=self.tap_stream_id, time_extracted=singer.utils.now(), record=transformed_record)
                         counter.increment()
+
 
 @attr.s
 class ProjectMembershipsStream(PivotalTrackerStream):
@@ -176,6 +177,7 @@ class ProjectMembershipsStream(PivotalTrackerStream):
                             singer.write_record(stream_name=self.tap_stream_id, time_extracted=singer.utils.now(), record=transformed_record)
                             counter.increment()
 
+
 @attr.s
 class LabelsStream(PivotalTrackerStream):
     tap_stream_id = 'labels'
@@ -195,6 +197,7 @@ class LabelsStream(PivotalTrackerStream):
                             transformed_record = transformer.transform(data=record, schema=self.schema)
                             singer.write_record(stream_name=self.tap_stream_id, time_extracted=singer.utils.now(), record=transformed_record)
                             counter.increment()
+
 
 @attr.s
 class StoriesStream(PivotalTrackerStream):
@@ -233,9 +236,6 @@ class StoriesStream(PivotalTrackerStream):
 
         if current_bookmark_str is not None:
             self.params.update({self.api_bookmark_param: current_bookmark_str})
-            current_bookmark_dt = singer.utils.strptime_to_utc(current_bookmark_str)
-        else:
-            current_bookmark_dt = None
 
         singer.bookmarks.write_bookmark(state=self.state,
                                         tap_stream_id=self.tap_stream_id,

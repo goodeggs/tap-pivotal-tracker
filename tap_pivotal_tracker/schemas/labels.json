@@ -1,39 +1,5 @@
 {
   "type": ["null", "object"],
-  "definitions": {
-    "counts_by_story_state": {
-      "type": ["null", "object"],
-      "properties": {
-        "delivered": {
-          "type": ["null", "integer"]
-        },
-        "unscheduled": {
-          "type": ["null", "integer"]
-        },
-        "rejected": {
-          "type": ["null", "integer"]
-        },
-        "finished": {
-          "type": ["null", "integer"]
-        },
-        "unstarted": {
-          "type": ["null", "integer"]
-        },
-        "planned": {
-          "type": ["null", "integer"]
-        },
-        "accepted": {
-          "type": ["null", "integer"]
-        },
-        "started": {
-          "type": ["null", "integer"]
-        },
-        "kind": {
-          "type": ["null", "string"]
-        }
-      }
-    }
-  },
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -58,13 +24,100 @@
       "type": ["null", "object"],
       "properties": {
         "number_of_zero_point_stories_by_state": {
-          "$ref": "labels.json#/definitions/counts_by_story_state"
+          "type": ["null", "object"],
+          "properties": {
+            "delivered": {
+              "type": ["null", "integer"]
+            },
+            "unscheduled": {
+              "type": ["null", "integer"]
+            },
+            "rejected": {
+              "type": ["null", "integer"]
+            },
+            "finished": {
+              "type": ["null", "integer"]
+            },
+            "unstarted": {
+              "type": ["null", "integer"]
+            },
+            "planned": {
+              "type": ["null", "integer"]
+            },
+            "accepted": {
+              "type": ["null", "integer"]
+            },
+            "started": {
+              "type": ["null", "integer"]
+            },
+            "kind": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "sum_of_story_estimates_by_state": {
-          "$ref": "labels.json#/definitions/counts_by_story_state"
+          "type": ["null", "object"],
+          "properties": {
+            "delivered": {
+              "type": ["null", "integer"]
+            },
+            "unscheduled": {
+              "type": ["null", "integer"]
+            },
+            "rejected": {
+              "type": ["null", "integer"]
+            },
+            "finished": {
+              "type": ["null", "integer"]
+            },
+            "unstarted": {
+              "type": ["null", "integer"]
+            },
+            "planned": {
+              "type": ["null", "integer"]
+            },
+            "accepted": {
+              "type": ["null", "integer"]
+            },
+            "started": {
+              "type": ["null", "integer"]
+            },
+            "kind": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "number_of_stories_by_state": {
-          "$ref": "labels.json#/definitions/counts_by_story_state"
+          "type": ["null", "object"],
+          "properties": {
+            "delivered": {
+              "type": ["null", "integer"]
+            },
+            "unscheduled": {
+              "type": ["null", "integer"]
+            },
+            "rejected": {
+              "type": ["null", "integer"]
+            },
+            "finished": {
+              "type": ["null", "integer"]
+            },
+            "unstarted": {
+              "type": ["null", "integer"]
+            },
+            "planned": {
+              "type": ["null", "integer"]
+            },
+            "accepted": {
+              "type": ["null", "integer"]
+            },
+            "started": {
+              "type": ["null", "integer"]
+            },
+            "kind": {
+              "type": ["null", "string"]
+            }
+          }
         },
         "kind": {
           "type": ["null", "string"]

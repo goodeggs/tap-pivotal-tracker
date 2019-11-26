@@ -1,11 +1,11 @@
 import json
-import logging
 import os
 
 import rollbar
 import singer
 
-from .client import AccountsStream, ProjectsStream, ProjectMembershipsStream, LabelsStream, StoriesStream
+from .client import (AccountsStream, LabelsStream, ProjectMembershipsStream,
+                     ProjectsStream, StoriesStream)
 
 AVAILABLE_STREAMS = {
     AccountsStream,
@@ -77,11 +77,13 @@ def main():
             discover(args, select_all=True)
         except:
             LOGGER.exception('Caught exception during Discovery..')
+            rollbar.report_exc_info()
     else:
         try:
             sync(args)
         except:
             LOGGER.exception('Caught exception during Sync..')
+            rollbar.report_exc_info()
 
 
 if __name__ == "__main__":
