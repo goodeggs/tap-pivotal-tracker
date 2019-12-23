@@ -7,6 +7,18 @@ import singer
 from .client import (AccountsStream, LabelsStream, ProjectMembershipsStream,
                      ProjectsStream, StoriesStream)
 
+LOGGER = singer.get_logger()
+
+try:
+    ROLLBAR_ACCESS_TOKEN = os.environ["ROLLBAR_ACCESS_TOKEN"]
+    ROLLBAR_ENVIRONMENT = os.environ["ROLLBAR_ENVIRONMENT"]
+except KeyError:
+    LOGGER.info("No Rollbar environment variables found. Rollbar logging disabled..")
+    log_to_rollbar = False
+else:
+    rollbar.init(ROLLBAR_ACCESS_TOKEN, ROLLBAR_ENVIRONMENT)
+    log_to_rollbar = True
+
 AVAILABLE_STREAMS = {
     AccountsStream,
     ProjectsStream,
@@ -14,12 +26,6 @@ AVAILABLE_STREAMS = {
     LabelsStream,
     StoriesStream
 }
-
-ROLLBAR_ACCESS_TOKEN = os.environ["ROLLBAR_ACCESS_TOKEN"]
-ROLLBAR_ENVIRONMENT = os.environ["ROLLBAR_ENVIRONMENT"]
-rollbar.init(ROLLBAR_ACCESS_TOKEN, ROLLBAR_ENVIRONMENT)
-
-LOGGER = singer.get_logger()
 
 REQUIRED_CONFIG_KEYS = [
     "api_token"

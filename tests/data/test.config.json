@@ -1,0 +1,10 @@
+{
+  "api_token": "foobar123",
+  "api_version": "v5",
+  "streams": {
+    "stories": {
+      "limit": 500,
+      "created_after": "2019-01-01T00:00:00Z"
+    }
+  }
+}
