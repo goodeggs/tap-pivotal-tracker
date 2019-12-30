@@ -1,7 +1,8 @@
 import os
-from typing import Dict
+from typing import ClassVar, Dict, Iterator, List, Optional, Set
 
 import attr
+import backoff
 import requests
 import singer
 
@@ -10,8 +11,16 @@ from .version import __version__
 LOGGER = singer.get_logger()
 
 
+def is_fatal_code(e: requests.exceptions.RequestException) -> bool:
+    '''Helper function to determine if a Requests reponse status code
+    is a "fatal" status code. If it is, the backoff decorator will giveup
+    instead of attemtping to backoff.'''
+    return 400 <= e.response.status_code < 500 and e.response.status_code != 429
+
+
 @attr.s
 class PivotalTrackerStream(object):
+    tap_stream_id: ClassVar[Optional[str]] = None
 
     api_token: str = attr.ib()
     config: Dict = attr.ib(repr=False)
@@ -69,6 +78,16 @@ class PivotalTrackerStream(object):
         return headers
 
     @singer.utils.ratelimit(limit=300, every=60)
+    @backoff.on_exception(backoff.fibo,
+                          requests.exceptions.HTTPError,
+                          max_time=120,
+                          giveup=is_fatal_code,
+                          logger=LOGGER)
+    @backoff.on_exception(backoff.fibo,
+                          (requests.exceptions.ConnectionError,
+                           requests.exceptions.Timeout),
+                          max_time=120,
+                          logger=LOGGER)
     def _get(self, endpoint: str, params: Dict = None) -> Dict:
         '''Constructs a standard way of making
         a GET request to the Pivotal Tracker REST API.
@@ -79,11 +98,12 @@ class PivotalTrackerStream(object):
         response.raise_for_status()
         return response.json()
 
-    def _yield_records(self, entity: str, params: Dict = None) -> Dict:
+    def _yield_records(self, entity: str, params: Optional[Dict] = None) -> Iterator[Dict]:
         '''Yeild individual records for a given entity.'''
-        params.update({
-            "envelope": "true"
-        })
+        if params is not None:
+            params.update({
+                "envelope": "true"
+            })
         response = self._get(endpoint=f"/{entity}", params=params)
         for record in response.get("data"):
             yield record
@@ -95,7 +115,8 @@ class PivotalTrackerStream(object):
             current_offset = pagination_data.get("offset")
             while total_returned < pagination_data.get("total"):
                 current_offset += pagination_data.get("returned")
-                params.update({"offset": current_offset})
+                if params is not None:
+                    params.update({"offset": current_offset})
                 response = self._get(endpoint=f"/{entity}", params=params)
                 for record in response.get("data"):
                     yield record
@@ -114,11 +135,11 @@ class PivotalTrackerStream(object):
 
 @attr.s
 class AccountsStream(PivotalTrackerStream):
-    tap_stream_id = 'accounts'
-    key_properties = ["id"]
-    bookmark_properties = []
-    replication_method = 'FULL_TABLE'
-    valid_params = set()
+    tap_stream_id: ClassVar[str] = 'accounts'
+    key_properties: ClassVar[List[str]] = ["id"]
+    bookmark_properties: ClassVar[List[str]] = []
+    replication_method: ClassVar[str] = 'FULL_TABLE'
+    valid_params: ClassVar[Set[str]] = set()
 
     def sync(self):
         with singer.metrics.job_timer(job_type=f"sync_{self.tap_stream_id}"):
@@ -132,11 +153,11 @@ class AccountsStream(PivotalTrackerStream):
 
 @attr.s
 class ProjectsStream(PivotalTrackerStream):
-    tap_stream_id = 'projects'
-    key_properties = ["id"]
-    bookmark_properties = []
-    replication_method = 'FULL_TABLE'
-    valid_params = {
+    tap_stream_id: ClassVar[str] = 'projects'
+    key_properties: ClassVar[List[str]] = ["id"]
+    bookmark_properties: ClassVar[List[str]] = []
+    replication_method: ClassVar[str] = 'FULL_TABLE'
+    valid_params: ClassVar[Set[str]] = {
         "account_ids"
     }
 
@@ -152,11 +173,11 @@ class ProjectsStream(PivotalTrackerStream):
 
 @attr.s
 class ProjectMembershipsStream(PivotalTrackerStream):
-    tap_stream_id = 'project_memberships'
-    key_properties = ["id"]
-    bookmark_properties = []
-    replication_method = 'FULL_TABLE'
-    valid_params = {
+    tap_stream_id: ClassVar[str] = 'project_memberships'
+    key_properties: ClassVar[List[str]] = ["id"]
+    bookmark_properties: ClassVar[List[str]] = []
+    replication_method: ClassVar[str] = 'FULL_TABLE'
+    valid_params: ClassVar[Set[str]] = {
         "role",
         "email",
         "name",
@@ -180,11 +201,11 @@ class ProjectMembershipsStream(PivotalTrackerStream):
 
 @attr.s
 class LabelsStream(PivotalTrackerStream):
-    tap_stream_id = 'labels'
-    key_properties = ["id"]
-    bookmark_properties = []
-    replication_method = 'FULL_TABLE'
-    valid_params = set()
+    tap_stream_id: ClassVar[str] = 'labels'
+    key_properties: ClassVar[List[str]] = ["id"]
+    bookmark_properties: ClassVar[List[str]] = []
+    replication_method: ClassVar[str] = 'FULL_TABLE'
+    valid_params: ClassVar[Set[str]] = set()
 
     def sync(self):
         with singer.metrics.job_timer(job_type=f"sync_{self.tap_stream_id}"):
@@ -201,17 +222,17 @@ class LabelsStream(PivotalTrackerStream):
 
 @attr.s
 class StoriesStream(PivotalTrackerStream):
-    tap_stream_id = 'stories'
-    key_properties = ["id"]
-    bookmark_properties = "updated_at"
-    api_bookmark_param = "updated_after"
-    replication_method = 'INCREMENTAL'
-    expand_endpoints = {
+    tap_stream_id: ClassVar[str] = 'stories'
+    key_properties: ClassVar[List[str]] = ["id"]
+    bookmark_properties: ClassVar[str] = "updated_at"
+    api_bookmark_param: ClassVar[str] = "updated_after"
+    replication_method: ClassVar[str] = 'INCREMENTAL'
+    expand_endpoints: ClassVar[Set[str]] = {
         "tasks",
         "comments",
         "blockers"
     }
-    valid_params = {
+    valid_params: ClassVar[Set[str]] = {
         "with_label",
         "with_story_type",
         "with_state",
